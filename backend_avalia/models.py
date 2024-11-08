@@ -14,7 +14,7 @@ class Escola(models.Model):
 # Modelo Turma
 class Turma(models.Model):
     nome_turma = models.CharField(max_length=255)
-    ano = models.IntegerField()
+    ano = models.CharField()
     escola = models.ForeignKey(Escola, on_delete=models.CASCADE, related_name='turmas')
 
     def __str__(self):
@@ -23,6 +23,7 @@ class Turma(models.Model):
 
 class Professor(models.Model):
     nome_professor = models.CharField(max_length=255)
+    sobrenome_professor = models.CharField(max_length=255)
     email_professor = models.EmailField(unique=True)
     cpf_professor = models.CharField(max_length=11, unique=True)
     senha_professor = models.CharField(max_length=255)  # Armazenaremos a senha como hash

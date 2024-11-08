@@ -42,28 +42,7 @@ class AdminSerializer(serializers.ModelSerializer):
         model = Admin
         fields = '__all__'
 
-class AdminLoginSerializer(serializers.Serializer):
-    email_admin = serializers.EmailField()
-    senha_admin = serializers.CharField(write_only=True)
-
-    def validate(self, data):
-        email = data.get("email_admin")
-        senha = data.get("senha_admin")
-
-        try:
-            admin = Admin.objects.get(email_admin=email)
-            if not admin.check_password(senha):
-                raise serializers.ValidationError("Credenciais de login inválidas")
-        except Admin.DoesNotExist:
-            raise serializers.ValidationError("Credenciais de login inválidas")
-
-        refresh = RefreshToken.for_user(admin)
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
-
-class ProfessorLoginSerializer(serializers.Serializer):
+class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     senha = serializers.CharField(write_only=True)
 
@@ -71,19 +50,29 @@ class ProfessorLoginSerializer(serializers.Serializer):
         email = data.get("email")
         senha = data.get("senha")
 
+        # Verifica se o usuário é um administrador
         try:
-            professor = Professor.objects.get(email=email)
-            if not professor.check_password(senha):
-                raise serializers.ValidationError("Credenciais de login inválidas")
-        except Professor.DoesNotExist:
-            raise serializers.ValidationError("Credenciais de login inválidas")
+            admin = Admin.objects.get(email_admin=email)
+            if admin.check_password(senha):
+                data['user'] = admin
+                data['is_admin'] = True
+                return data
+        except Admin.DoesNotExist:
+            pass
 
-        refresh = RefreshToken.for_user(professor)
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
-    
+        # Verifica se o usuário é um professor
+        try:
+            professor = Professor.objects.get(email_professor=email)
+            if professor.check_password(senha):
+                data['user'] = professor
+                data['is_admin'] = False
+                return data
+        except Professor.DoesNotExist:
+            pass
+
+        # Se o usuário não for encontrado ou a senha estiver incorreta
+        raise serializers.ValidationError("Credenciais de login inválidas")
+
 # Serializer de Cadastro para Admin
 class AdminSignupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -102,11 +91,11 @@ class AdminSignupSerializer(serializers.ModelSerializer):
 class ProfessorSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Professor
-        fields = ['nome_professor', 'email', 'senha']
+        fields = ['nome_professor', 'sobrenome_professor','cpf_professor', 'email_professor', 'senha_professor']
         extra_kwargs = {'senha': {'write_only': True}}
 
     def create(self, validated_data):
-        senha = validated_data.pop('senha')
+        senha = validated_data.pop('senha_professor')
         professor = Professor(**validated_data)
         professor.set_password(senha)
         professor.save()

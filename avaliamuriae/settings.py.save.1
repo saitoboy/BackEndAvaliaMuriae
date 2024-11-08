@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 from pathlib import Path
+
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
     'backend_avalia',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -51,8 +52,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 REST_FRAMEWORK = {
@@ -68,11 +67,6 @@ SIMPLE_JWT = {
 }
 
 ROOT_URLCONF = 'avaliamuriae.urls'
-
-# Permitir todos os métodos e cabeçalhos necessários
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ['content-type', 'authorization', 'x-csrftoken']
-CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
 
 TEMPLATES = [
     {
@@ -143,6 +137,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 
@@ -150,4 +145,3 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
